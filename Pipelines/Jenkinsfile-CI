@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+    environment {
+        AWS_REGION = 'us-east-1'
+        ECR_REPO_NAME = 'trapecio-calculator'  // Reemplaza con el nombre de tu repositorio ECR
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clonar el repositorio
+                git branch: 'main', url: 'https://github.com/jrojas02/globantchallenge.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('ms-trapecio-calculator') {
+                    script {
+                        def imageTag = env.BUILD_ID  // Usa el ID de construcción para versionar la imagen
+                        // Construir la imagen Docker desde el Dockerfile dentro de la carpeta ms-trapecio-calculator
+                        sh "docker build -t trapezoid-calculator:${imageTag} ."
+                    }
+                }
+            }
+        }
+
+        stage('Login to AWS ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                  credentialsId: 'aws-credentials-dev-env']]) {
+                    script {
+                        def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                        // Autenticar Docker con ECR usando las credenciales de Jenkins
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                    }
+                }
+            }
+        }
+
+        stage('Tag Docker Image') {
+            steps {
+                script {
+                    def imageTag = env.BUILD_ID  // Usa el ID de construcción para versionar la imagen
+                    def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                    // Etiquetar la imagen Docker con la URI del repositorio ECR
+                    sh "docker tag trapezoid-calculator:${imageTag} ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${imageTag}"
+                }
+            }
+        }
+
+        stage('Push Docker Image to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                  credentialsId: 'aws-credentials-dev-env']]) {
+                    script {
+                        def imageTag = env.BUILD_ID  // Usa el ID de construcción para versionar la imagen
+                        def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                        // Subir la imagen Docker al repositorio ECR
+                        sh "docker push ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${imageTag}"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completado exitosamente.'
+        }
+        failure {
+            echo 'Pipeline fallido.'
+        }
+    }
+}
