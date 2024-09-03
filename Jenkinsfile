@@ -7,7 +7,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clonar el repositorio
-                git 'https://github.com/jrojas02/globantchallenge.git'
+                git branch: 'main', url: 'https://github.com/jrojas02/globantchallenge.git'
             }
         }
 
