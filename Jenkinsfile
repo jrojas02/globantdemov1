@@ -1,18 +1,60 @@
 pipeline {
     agent any
+    environment {
+        AWS_REGION = 'us-east-1'
+    }
     stages {
-        stage('List S3 Buckets') {
+        stage('Checkout') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
-                                  credentialsId: 'aws-credentials-dev-env']]) {
-                    script {
-                        // Ejecuta el comando AWS CLI directamente
-                        sh 'aws s3 ls'
+                // Clonar el repositorio
+                git 'https://github.com/jrojas02/globantchallenge'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('devops') {
+                    // Inicializar Terraform
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('devops') {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                      accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                      credentialsId: 'aws-credentials-dev-env']]) {
+                        // Crear el plan de Terraform
+                        sh 'terraform plan'
                     }
                 }
             }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('devops') {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                      accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                      credentialsId: 'aws-credentials-dev-env']]) {
+                        // Aplicar la configuración de Terraform
+                        sh 'terraform apply -auto-approve'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completado exitosamente.'
+        }
+        failure {
+            echo 'Pipeline fallido.'
         }
     }
 }
