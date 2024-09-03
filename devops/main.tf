@@ -6,11 +6,6 @@ terraform {
       version = "~> 4.0"
     }
   }
-  backend "s3" {
-    bucket         = var.s3_bucket
-    key            = "terraform/state"
-    region         = var.region
-  }
 }
 
 provider "aws" {

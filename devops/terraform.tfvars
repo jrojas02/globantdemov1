@@ -1,3 +1,3 @@
 s3_bucket       = "my-terraform-state-bucket"
-region          = "us-west-2"
+region          = "us-east-1"
 cluster_name    = "my-cluster"
