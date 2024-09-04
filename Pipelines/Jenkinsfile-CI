@@ -45,11 +45,15 @@ pipeline {
 
         stage('Tag Docker Image') {
             steps {
-                script {
-                    def imageTag = env.BUILD_ID  // Usa el ID de construcción para versionar la imagen
-                    def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
-                    // Etiquetar la imagen Docker con la URI del repositorio ECR
-                    sh "docker tag trapezoid-calculator:${imageTag} ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${imageTag}"
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                credentialsId: 'aws-credentials-dev-env']]) {
+                    script {
+                        def imageTag = env.BUILD_ID
+                        def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                        sh "docker tag trapezoid-calculator:${imageTag} ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${imageTag}"
+                    }
                 }
             }
         }
