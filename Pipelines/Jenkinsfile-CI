@@ -27,10 +27,13 @@ pipeline {
         stage('Login to AWS ECR') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
-                                  credentialsId: 'aws-credentials-dev-env']]) {
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                credentialsId: 'aws-credentials-dev-env']]) {
                     script {
+                        // Verificar si las credenciales son válidas
+                        sh "aws sts get-caller-identity"
+                        
                         def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
                         // Autenticar Docker con ECR usando las credenciales de Jenkins
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -38,6 +41,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Tag Docker Image') {
             steps {
