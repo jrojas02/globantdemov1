@@ -2,7 +2,10 @@ pipeline {
     agent any
     environment {
         AWS_REGION = 'us-east-1'
-        ECR_REPO_NAME = 'trapecio-calculator'  // Reemplaza con el nombre de tu repositorio ECR
+        ECR_REPO_NAME = 'trapecio-calculator'
+        ECS_CLUSTER_NAME = 'my-cluster'
+        ECS_SERVICE_NAME = 'trapecio-service'
+        ECS_TASK_FAMILY = 'trapecio-task'
     }
     stages {
         stage('Checkout') {
@@ -42,7 +45,6 @@ pipeline {
             }
         }
 
-
         stage('Tag Docker Image') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
@@ -73,11 +75,54 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to ECS') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
+                                  credentialsId: 'aws-credentials-dev-env']]) {
+                    script {
+                        def imageTag = env.BUILD_ID
+                        def awsAccountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                        def imageUrl = "${awsAccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${imageTag}"
+
+                        // Crear una nueva definición de tarea con la nueva imagen
+                        def newTaskDefinition = sh(script: """
+                            aws ecs register-task-definition --family ${ECS_TASK_FAMILY} \\
+                            --container-definitions "[
+                                {
+                                    \\"name\\": \\"${ECS_TASK_FAMILY}\\",
+                                    \\"image\\": \\"${imageUrl}\\",
+                                    \\"memory\\": 512,
+                                    \\"cpu\\": 256,
+                                    \\"essential\\": true,
+                                    \\"portMappings\\": [
+                                        {
+                                            \\"containerPort\\": 80,
+                                            \\"hostPort\\": 80
+                                        }
+                                    ]
+                                }
+                            ]" --query "taskDefinition.taskDefinitionArn" --output text
+                        """, returnStdout: true).trim()
+
+                        // Actualizar el servicio ECS con la nueva definición de tarea
+                        sh """
+                            aws ecs update-service --cluster ${ECS_CLUSTER_NAME} \\
+                            --service ${ECS_SERVICE_NAME} \\
+                            --task-definition ${newTaskDefinition} \\
+                            --force-new-deployment
+                        """
+                    }
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Pipeline completado exitosamente.'
+            echo 'Pipeline completado exitosamente y aplicación desplegada en ECS.'
         }
         failure {
             echo 'Pipeline fallido.'
