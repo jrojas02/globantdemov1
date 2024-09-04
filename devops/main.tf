@@ -13,13 +13,13 @@ provider "aws" {
 }
 
 module "ecs_cluster" {
-  source = "../modules/ecs-cluster"
+  source = "./modules/ecs-cluster"
 
   cluster_name = var.cluster_name
 }
 
 module "ecs_task_definition" {
-  source = "../modules/ecs-task-definition"
+  source = "./modules/ecs-task-definition"
 
   family             = var.task_family
   image              = var.task_image
@@ -32,7 +32,7 @@ module "ecs_task_definition" {
 }
 
 module "ecs_service" {
-  source           = "../modules/ecs-service"
+  source           = "./modules/ecs-service"
 
   service_name     = var.service_name
   cluster_id       = module.ecs_cluster.cluster_id
