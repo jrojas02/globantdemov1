@@ -1,1 +1,11 @@
 cluster_name = "my-dev-cluster"
+task_family = "trapecio-task"
+task_cpu = 256
+task_memory = 512
+container_port = 80
+host_port = 80
+service_name = "trapecio-service"
+desired_count = 1
+subnets = "subnet-12345678"
+security_groups = "sg-12345678"
+container_name = "trapecio-task"

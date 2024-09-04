@@ -38,3 +38,8 @@ variable "container_port" {
   description = "Port on which the container is listening"
   type        = number
 }
+
+variable "container_name" {
+  description = "Name of container"
+  type        = string
+}

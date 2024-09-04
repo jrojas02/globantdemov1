@@ -3,7 +3,7 @@ pipeline {
     environment {
         AWS_REGION = 'us-east-1'
         ECR_REPO_NAME = 'trapecio-calculator'
-        ECS_CLUSTER_NAME = 'my-cluster'
+        ECS_CLUSTER_NAME = 'my-dev-cluster'
         ECS_SERVICE_NAME = 'trapecio-service'
         ECS_TASK_FAMILY = 'trapecio-task'
     }
