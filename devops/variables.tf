@@ -9,6 +9,11 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "container_name" {
+  description = "Name of Container"
+  type        = string
+}
+
 variable "task_family" {
   description = "Family name for the ECS task definition"
   type        = string
