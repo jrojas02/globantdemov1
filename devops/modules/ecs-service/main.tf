@@ -13,7 +13,7 @@ resource "aws_ecs_service" "trapecio_service" {
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "trapecio_task"
+    container_name   = var.container_name
     container_port   = var.container_port
   }
 

@@ -44,5 +44,6 @@ module "ecs_service" {
   security_groups  = var.security_groups
   target_group_arn = var.target_group_arn
   container_port   = var.container_port
+  container_name   = var.container_name
 }
 
