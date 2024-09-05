@@ -25,7 +25,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn  = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_iam_role" "ecs_task_role" {
@@ -43,4 +43,12 @@ resource "aws_iam_role" "ecs_task_role" {
       },
     ]
   })
+}
+
+module "ecs_cluster" {
+  source = "./modules/ecs_cluster" # Ajusta el path al módulo ECS si es diferente
+
+  cluster_name            = var.cluster_name
+  task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn           = aws_iam_role.ecs_task_role.arn
 }
