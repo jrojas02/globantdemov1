@@ -13,9 +13,11 @@ provider "aws" {
 }
 
 module "ecs_cluster" {
-  source = "./modules/ecs-cluster"
+  source = "./modules/ecs_cluster" # Ajusta el path al módulo ECS si es diferente
 
-  cluster_name = var.cluster_name
+  cluster_name            = var.cluster_name
+  task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn           = aws_iam_role.ecs_task_role.arn
 }
 
 module "ecs_task_definition" {
