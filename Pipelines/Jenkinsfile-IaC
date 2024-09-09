@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/jrojas02/globantchallenge.git', credentialsId: 'github-pat'
+                git branch: 'main', url: 'https://github.com/jrojas02/globantdemov1.git', credentialsId: 'github-pat'
             }
         }
 
