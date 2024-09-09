@@ -9,7 +9,7 @@ pipeline {
                 // Clonar el repositorio
                 git branch: 'main', url: 'https://github.com/jrojas02/globantchallenge.git'
             }
-        }
+        }a
 
         stage('Terraform Init') {
             steps {
@@ -26,7 +26,7 @@ pipeline {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                       accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
                                       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
-                                      credentialsId: 'aws-credentials-dev-env']]) {
+                                      credentialsId: 'aws-account-dev-environment']]) {
                         // Crear el plan de Terraform
                         sh 'terraform plan'
                     }
@@ -40,7 +40,7 @@ pipeline {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                       accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
                                       secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
-                                      credentialsId: 'aws-credentials-dev-env']]) {
+                                      credentialsId: 'aws-account-dev-environment']]) {
                         // Aplicar la configuración de Terraform
                         sh 'terraform apply -auto-approve'
                     }

@@ -8,8 +8,8 @@ RUN jenkins-plugin-cli --plugins \
     workflow-aggregator
 
 # Exponer los puertos que Jenkins usará
-EXPOSE 8080
-EXPOSE 50000
+EXPOSE 8090
+EXPOSE 51000
 
 # Definir el directorio de trabajo para Jenkins
 WORKDIR /var/jenkins_home
