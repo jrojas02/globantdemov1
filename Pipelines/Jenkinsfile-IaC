@@ -9,7 +9,7 @@ pipeline {
                 // Clonar el repositorio
                 git branch: 'main', url: 'https://github.com/jrojas02/globantchallenge.git'
             }
-        }a
+        }
 
         stage('Terraform Init') {
             steps {

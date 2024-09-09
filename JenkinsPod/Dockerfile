@@ -5,7 +5,8 @@ FROM jenkins/jenkins:lts
 RUN jenkins-plugin-cli --plugins \
     terraform \
     amazon-ecs \
-    workflow-aggregator
+    workflow-aggregator \
+    aws-steps
 
 # Exponer los puertos que Jenkins usará
 EXPOSE 8090
